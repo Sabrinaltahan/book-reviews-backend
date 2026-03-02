@@ -1,4 +1,10 @@
 {
-  "users": [],
+  "users": [
+    {
+      "id": "b6b1c7d1-c84b-4e23-8caa-a306e3091511",
+      "email": "test@test.com",
+      "passwordHash": "$2b$10$PqF7cAbR2Nr.icrmIgFDbeKdIXjFz29yHrn7QnJlG8CLKJzO/GySu"
+    }
+  ],
   "reviews": []
 }
