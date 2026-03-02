@@ -6,5 +6,14 @@
       "passwordHash": "$2b$10$PqF7cAbR2Nr.icrmIgFDbeKdIXjFz29yHrn7QnJlG8CLKJzO/GySu"
     }
   ],
-  "reviews": []
+  "reviews": [
+    {
+      "id": "542f1c15-ea62-4e13-9371-7e54d7922c47",
+      "objectId": "book123",
+      "userId": "b6b1c7d1-c84b-4e23-8caa-a306e3091511",
+      "text": "Amazing book!",
+      "rating": 5,
+      "createdAt": "2026-03-02T20:15:05.712Z"
+    }
+  ]
 }
