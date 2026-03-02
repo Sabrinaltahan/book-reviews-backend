@@ -8,12 +8,12 @@
   ],
   "reviews": [
     {
-      "id": "542f1c15-ea62-4e13-9371-7e54d7922c47",
+      "id": "20a08dbd-7490-4fee-adce-cc573f337050",
       "objectId": "book123",
       "userId": "b6b1c7d1-c84b-4e23-8caa-a306e3091511",
       "text": "Amazing book!",
       "rating": 5,
-      "createdAt": "2026-03-02T20:15:05.712Z"
+      "createdAt": "2026-03-02T21:58:19.600Z"
     }
   ]
 }
