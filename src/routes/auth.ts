@@ -1,15 +1,9 @@
 import { Router } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { readDb, writeDb } from "../utils/db";
+import User from "../models/User";
 
 const router = Router();
-
-type User = {
-  id: string;
-  email: string;
-  passwordHash: string;
-};
 
 router.post("/register", async (req, res) => {
   try {
@@ -22,29 +16,21 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    const db = await readDb();
-    const users: User[] = db.users || [];
+    const existingUser = await User.findOne({ email });
 
-    const exists = users.find((u) => u.email === email);
-    if (exists) {
+    if (existingUser) {
       return res.status(409).json({ message: "Email already exists" });
     }
 
     const passwordHash = await bcrypt.hash(password, 10);
 
-    const newUser: User = {
-      id: crypto.randomUUID(),
+    const newUser = await User.create({
       email,
       passwordHash,
-    };
-
-    users.push(newUser);
-    db.users = users;
-
-    await writeDb(db);
+    });
 
     return res.status(201).json({
-      id: newUser.id,
+      id: newUser._id,
       email: newUser.email,
     });
   } catch (error) {
@@ -64,17 +50,10 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Email and password are required" });
     }
 
-    const db = await readDb();
-    const users: User[] = db.users || [];
-
-    const user = users.find((u) => u.email === email);
+    const user = await User.findOne({ email });
 
     if (!user) {
       return res.status(401).json({ message: "Invalid credentials" });
-    }
-
-    if (!user.passwordHash) {
-      return res.status(500).json({ message: "User password hash missing" });
     }
 
     const validPassword = await bcrypt.compare(password, user.passwordHash);
@@ -84,7 +63,7 @@ router.post("/login", async (req, res) => {
     }
 
     const token = jwt.sign(
-      { userId: user.id, email: user.email },
+      { userId: String(user._id), email: user.email },
       process.env.JWT_SECRET as string,
       { expiresIn: "1h" }
     );
