@@ -1,4 +1,51 @@
 {
-  "users": [],
-  "reviews": []
+  "users": [
+    {
+      "id": "u1",
+      "email": "demo@test.com",
+      "passwordHash": "$2b$10$demoexamplehashpassword123456789"
+    }
+  ],
+  "reviews": [
+    {
+      "id": "r1",
+      "objectId": "harry-potter",
+      "userId": "u1",
+      "text": "Amazing fantasy story with a magical world and unforgettable characters.",
+      "rating": 5,
+      "createdAt": "2026-03-11"
+    },
+    {
+      "id": "r2",
+      "objectId": "the-hobbit",
+      "userId": "u1",
+      "text": "A great adventure story with dragons, treasure and a wonderful fantasy world.",
+      "rating": 4,
+      "createdAt": "2026-03-11"
+    },
+    {
+      "id": "r3",
+      "objectId": "1984",
+      "userId": "u1",
+      "text": "A powerful and disturbing dystopian novel about control and surveillance.",
+      "rating": 5,
+      "createdAt": "2026-03-11"
+    },
+    {
+      "id": "r4",
+      "objectId": "atomic-habits",
+      "userId": "u1",
+      "text": "Very practical book that explains how small habits can change your life.",
+      "rating": 5,
+      "createdAt": "2026-03-11"
+    },
+    {
+      "id": "r5",
+      "objectId": "the-alchemist",
+      "userId": "u1",
+      "text": "A simple but inspiring story about following your dreams.",
+      "rating": 4,
+      "createdAt": "2026-03-11"
+    }
+  ]
 }
