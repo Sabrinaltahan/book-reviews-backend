@@ -1,112 +1,97 @@
 import { Router } from "express";
-import { authenticateToken, AuthRequest } from "../middleware/authMiddleware";
-import { readDb, writeDb } from "../utils/db";
-import { randomUUID } from "crypto";
+import Review from "../models/Review";
+import authMiddleware from "../middleware/authMiddleware";
 
 const router = Router();
 
-/**
- * Create review
- */
-router.post("/", authenticateToken, async (req: AuthRequest, res) => {
-  const { objectId, text, rating } = req.body;
-
-  if (!objectId || !text || !rating) {
-    return res.status(400).json({ message: "All fields are required" });
+router.get("/my", authMiddleware, async (req: any, res) => {
+  try {
+    const reviews = await Review.find({ userId: req.user.userId }).sort({
+      createdAt: -1,
+    });
+    return res.json(reviews);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch reviews" });
   }
-
-  const db = await readDb();
-
-  const newReview = {
-    id: randomUUID(),
-    objectId,
-    userId: req.user!.userId,
-    text,
-    rating: Number(rating),
-    createdAt: new Date().toISOString(),
-  };
-
-  db.reviews.push(newReview);
-  await writeDb(db);
-
-  return res.status(201).json(newReview);
 });
 
-/**
- * Get my reviews
- */
-router.get("/my", authenticateToken, async (req: AuthRequest, res) => {
-  const db = await readDb();
-
-  const myReviews = db.reviews.filter(
-    (r) => r.userId === req.user!.userId
-  );
-
-  return res.json(myReviews);
-});
-
-
-// Get reviews for a specific object (book)
 router.get("/object/:objectId", async (req, res) => {
-  const { objectId } = req.params;
+  try {
+    const reviews = await Review.find({
+      objectId: req.params.objectId,
+    }).sort({ createdAt: -1 });
 
-  const db = await readDb();
-  const reviews = db.reviews.filter((r) => r.objectId === objectId);
-
-  return res.json(reviews);
+    return res.json(reviews);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to fetch reviews" });
+  }
 });
 
+router.post("/", authMiddleware, async (req: any, res) => {
+  try {
+    const { objectId, text, rating } = req.body;
 
-/**
- * Update review (only owner)
- */
-router.put("/:id", authenticateToken, async (req: AuthRequest, res) => {
-  const { id } = req.params;
-  const { text, rating } = req.body as { text?: string; rating?: number };
+    if (!objectId || !text || !rating) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
 
-  if (text === undefined && rating === undefined) {
-    return res.status(400).json({ message: "Nothing to update" });
+    const newReview = await Review.create({
+      objectId,
+      userId: req.user.userId,
+      text,
+      rating,
+      createdAt: new Date().toISOString(),
+    });
+
+    return res.status(201).json(newReview);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to create review" });
   }
-
-  const db = await readDb();
-  const review = db.reviews.find((r) => r.id === id);
-
-  if (!review) {
-    return res.status(404).json({ message: "Review not found" });
-  }
-
-  if (review.userId !== req.user!.userId) {
-    return res.status(403).json({ message: "Forbidden" });
-  }
-
-  if (text !== undefined) review.text = text;
-  if (rating !== undefined) review.rating = Number(rating);
-
-  await writeDb(db);
-  return res.json(review);
 });
 
-/**
- * Delete review (only owner)
- */
-router.delete("/:id", authenticateToken, async (req: AuthRequest, res) => {
-  const { id } = req.params;
+router.put("/:id", authMiddleware, async (req: any, res) => {
+  try {
+    const { text, rating } = req.body;
 
-  const db = await readDb();
-  const index = db.reviews.findIndex((r) => r.id === id);
+    const review = await Review.findById(req.params.id);
 
-  if (index === -1) {
-    return res.status(404).json({ message: "Review not found" });
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    if (review.userId !== req.user.userId) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    review.text = text ?? review.text;
+    review.rating = rating ?? review.rating;
+
+    await review.save();
+
+    return res.json(review);
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to update review" });
   }
+});
 
-  if (db.reviews[index].userId !== req.user!.userId) {
-    return res.status(403).json({ message: "Forbidden" });
+router.delete("/:id", authMiddleware, async (req: any, res) => {
+  try {
+    const review = await Review.findById(req.params.id);
+
+    if (!review) {
+      return res.status(404).json({ message: "Review not found" });
+    }
+
+    if (review.userId !== req.user.userId) {
+      return res.status(403).json({ message: "Forbidden" });
+    }
+
+    await review.deleteOne();
+
+    return res.json({ message: "Review deleted" });
+  } catch (error) {
+    return res.status(500).json({ message: "Failed to delete review" });
   }
-
-  const deleted = db.reviews.splice(index, 1)[0];
-  await writeDb(db);
-
-  return res.json({ message: "Deleted", deleted });
 });
 
 export default router;
